@@ -1,0 +1,620 @@
+
+<!DOCTYPE html>
+<!--
+Author: Robert Lie (mobilefish.com)
+
+Installation instructions:
+1. 	Get iota.min.js file.
+	The iota.min.js (v0.4.7) javascript library file can be downloaded from:
+	https://github.com/iotaledger/iota.lib.js/releases
+	The library file is located in iota.lib.js-X.X.X/dist/iota.min.js
+2.	Get the mam.web.js and iota-bindings-emscripten.wasm files.
+	The mam.web.js and iota-bindings-emscripten.wasm (last commit: feb 5, 2018; commit hash: a365e8f ) can be downloaded from:
+	https://github.com/iotaledger/mam.client.js
+	Both files are located in the lib folder.
+3. Copy the mam.html, iota.min.js, mam.web.js and iota-bindings-emscripten.wasm files to a webserver.
+4. Let assume your webserver folder structure looks like this:
+	<docroot>/mam.html
+	<docroot>/scripts/iota/v0.4.7/iota.min.js
+	<docroot>/scripts/iota/mam.web.js
+	<docroot>/scripts/iota/iota-bindings-emscripten.wasm
+
+ 	Modify file mam.html and edit the javascript locations.
+ 	Modify file mam.web.js. The location of the file iota-bindings-emscripten.wasm must be changed.
+	Must specify the absolute path starting from the webserver docroot.
+	A relative path is not allowed!
+	Based on the previous mentioned folder structure change line to: /scripts/iota/iota-bindings-emscripten.wasm
+-->
+<html>
+<head>
+<title>Mobilefish.com - IOTA Masked Authenticated Messaging Demo</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<script type="text/javascript" src="scripts/iota/v0.4.7/iota.min.js"></script>
+<script type="text/javascript" src="scripts/iota/mam.web.js"></script>
+<script type="text/javascript">
+"use strict";
+
+function showIOTAImage() {
+	let iotaImage = new Image();
+	iotaImage.src = "data:image/gif;base64,"+
+"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEm0lEQVR4nK3XWexfUxAH8M9/qX/"+
+"RqpbSIlpSxd+WxhqhtTRUq0pborWEEEvUVksERYk0QoigXhBiC7XTJqJ90JQHa4JYmhBebKklqp"+
+"aW/jzM3N7j9tfyF5Pc3HvOmZkzM2fme+by/1JHvkfiHazBZY21PinrLgQ7iu+ufJrUne95aOEP/"+
+"IyhGzKiuzlRUKWgHFf0Z6GwE2sb6ysLQ39v6PlHqqwcjvOwLXrwDJ7AJpiBmQ25LnWUtsT9eA1T"+
+"cr3T36O4wc0rhheEVwuwU363MDrfP2MM7kkjS+PbUWcbJzd6BGvy3YUvcCZ+wnKcjhUi2c7D0tz"+
+"gSXE8HWn0JfgY88UxbYFfC91trawSbwimYkCxvgv6N2Q2w7Q0aLg6OZ9TR+0gHIxvRHXsWOy3jj"+
+"oa3z24BY+lEVeksuuwL97DpOTvSYOXYXLOvVQYcCAeLcazk2fdCVSb9+K4/D6qEJiOM7A6hY/N+"+
+"bPwNBanzN7qktsJd2BWjs9JmRXpwLoIVGHoxbfJNBeD8TY+wajk2a2I0qg0/CbMwV0iH0rqaYxH"+
+"5lPt21GG4aTC4zdyrp/1aRh2bTM/D+en0k3FEawU0SO8vgADNaqlKr1BeBaf4tBi/QC8iFNEAn6"+
+"G30Q53ooluWFJwwtn7s65T3N8X457RQKvR/3TgN1zvCgFvxZl9BFWpQFL8T0Ox3dq0IHT8Ah2Fu"+
+"F+PfVcLfJpFV6hLr2ejMScZPxWnNdM/IA7U/EwUY5Ewg3FCDwvsh3GYWzDsSGiajrxcO6xul0El"+
+"qnDV8HtVv4FjCYNF2DUwh654Y14XB3yLXE7ToAdcLO6XCYK5FsoKqG56UwB0wPUl1H1rmgJ3hfR"+
+"qS6kFsZje1ykALQ3Co8vzrkS/brEEc0Wob5UJOImuV5t3g/7iLLcTl1BmwpEnZt6Hsq9bkvdWiK"+
+"rWxmmTjWcjhVJOFDcAVWSjVNjQ3k0N6SeU3N8HL7CMYVD0/CuGkXdm0IrC8Z+qXRMoWySON/Byf"+
+"9+etQpQj0HRwsw2jqdOB6/iKzfXJTkSdpcgmNFXTY9WixqfXM1QnaLWi5Rb79cPznHW4iL53yBL"+
+"9KolkhyGhdRRR2N9yECwTrFOY4ueKeK6G2T66NE5O7AuaKPmJi8V4v8Ohp7Wj9pdWnfMLwsILVD"+
+"dEGvCYDqxpfp0ekNJ54SISeiOi7lXm3ncXUWf7ZbxFvi9mphf3Gn94ge7xpxzy8SObAiZaaLu+J"+
+"mAT5jcJg6uVuiOdkoVREYgKuwlyi7kbnp0IL3Mvwo8qNC1V7RS2yVT5+pisyMtPj2HFc35sI0qA"+
+"dv5twH/+BQn/4LKuZBOFuN/RNFT/dAwXukaErGC1S9D9encSWmtM36f2MEcWstEqg2UpTlXFzbk"+
+"HlQjaozivmNNb8bpArj9yqUbpNrJxZzkwuZ+cX8lDT4IQFaZxV6+0xTMUHU+gSB+V+JUhwhsH+c"+
+"SLh56jtlVmHQ6uTtsxHl/2DV1Zwtfka2z02X5/y8huzlhQFrRaP6nwzoEo3Id6msPPuye/5QVEf"+
+"5b7EAn+PChkN9okroCFwpkrCC04ECMf8QrTfre9i294O/AFMhAOyrIPPRAAAAAElFTkSuQmCC";
+	document.write('<img src="'+iotaImage.src+'" alt="IOTA" title="IOTA" width="32" height="32" />');
+}
+</script>
+
+<style type="text/css">
+a:link {text-decoration: none; color: blue;}
+body {font-size: 1em; font-family: arial, helvetica; background-color: #fffada;}
+textarea {font-family: monospace;}
+button {background-color: #008cba; border: 1px solid black; color: white; padding: 5px 15px; text-align: center; text-decoration: none; display: inline-block; border-radius: 4px; font-size: 16px;}
+h1 {font-family: arial, helvetica;font-size: 2.5em;}
+input {padding: 5px 5px; margin: 5px 0; box-sizing: border-box; border: 1px solid black; border-radius: 4px; background-color: white; font-family: monospace; font-size: 1.1em;}
+select {width: 40%; border: 1px solid black; border-radius: 4px; background-color: white; font-family: arial, helvetica; font-size: 0.9em;}
+.container {background-color: #008cba; border: 1px solid black; color: white; padding: 5px 15px; margin: 0; font-family: monospace;}
+#disclaimer{background-color: #fda429; border: 1px solid black; color: black; padding: 5px 15px; margin: 0; font-family: monospace;}
+#warning{background-color: #000000; color: white; padding: 0; margin: 5px 0px; font-family: monospace; font-size: 1.2em;}
+</style>
+
+</head>
+<body>
+<h1> <script language="JavaScript" type="text/javascript">showIOTAImage();</script> IOTA Masked Authenticated Messaging Demo (v1.0.3) <script language="JavaScript" type="text/javascript">showIOTAImage();</script> </h1>
+
+<!-- =========================================================================== -->
+Select option:<br />
+<select id='makeSelection' onchange='makeSelection()'>
+<option value='publisher' selected='selected'>Data publisher</option>
+<option value='receiver'>Data receiver</option>
+<option value='decode'>Decode payload</option>
+</select>
+<br /><br />
+
+<!-- =========================================================================== -->
+Select testnet / mainnet endpoint or enter custom endpoint: <br />
+<select id='endpoint' onchange='setEndpoint();'>
+	<option value='none'>--- Testnet endpoints ---</option>
+	<option value='testnet|https://testnet140.tangle.works:443'>Testnet - https://testnet140.tangle.works:443</option>
+	<option value='testnet|http://p101.iotaledger.net:14700'>Testnet - http://p101.iotaledger.net:14700</option>
+	<option value='testnet|http://p102.iotaledger.net:14700'>Testnet - http://p102.iotaledger.net:14700</option>
+	<option value='testnet|http://p103.iotaledger.net:14700'>Testnet - http://p103.iotaledger.net:14700</option>
+	<option value='testnet|https://nodes.testnet.iota.org:443'>Testnet - https://nodes.testnet.iota.org:443</option>
+	<option value='none'>--- Mainnet endpoints ---</option>
+	<option value='mainnet|https://field.carriota.com:443' selected='selected'>Mainnet - https://field.carriota.com:443</option>
+	<option value='mainnet|https://nodes.thetangle.org:443'>Mainnet - https://nodes.thetangle.org:443</option>
+	<option value='mainnet|https://node.tangle.works:443'>Mainnet - https://node.tangle.works:443</option>
+	<option value='mainnet|https://potato.iotasalad.org:14265'>Mainnet - https://potato.iotasalad.org:14265</option>
+	<option value='mainnet|https://durian.iotasalad.org:14265'>Mainnet - https://durian.iotasalad.org:14265</option>
+	<option value='mainnet|https://peanut.iotasalad.org:14265'>Mainnet - https://peanut.iotasalad.org:14265</option>
+	<option value='mainnet|https://tuna.iotasalad.org:14265'>Mainnet - https://tuna.iotasalad.org:14265</option>
+	<option value='mainnet|https://turnip.iotasalad.org:14265'>Mainnet - https://turnip.iotasalad.org:14265</option>
+	<option value='mainnet|https://beef.iotasalad.org:14265'>Mainnet - https://beef.iotasalad.org:14265</option>
+	<option value='mainnet|https://pea.iotasalad.org:14265'>Mainnet - https://pea.iotasalad.org:14265</option>
+	<option value='mainnet|http://service.iotasupport.com:14265'>Mainnet - http://service.iotasupport.com:14265</option>
+	<option value='mainnet|http://eugene.iota.community:14265'>Mainnet - http://eugene.iota.community:14265</option>
+	<option value='mainnet|http://node01.iotatoken.nl:14265'>Mainnet - http://node01.iotatoken.nl:14265</option>
+	<option value='mainnet|http://mainnet.necropaz.com:14500'>Mainnet - http://mainnet.necropaz.com:14500</option>
+	<option value='mainnet|http://wallets.iotamexico.com:80'>Mainnet - http://wallets.iotamexico.com:80</option>
+	<option value='mainnet|http://node.lukaseder.de:14265'>Mainnet - http://node.lukaseder.de:14265</option>
+	<option value='mainnet|http://nodes.iota.fm:80'>Mainnet - http://nodes.iota.fm:80</option>
+	<option value='mainnet|http://iri2.iota.fm:80'>Mainnet - http://iri2.iota.fm:80</option>
+	<option value='mainnet|http://localhost:14265'>Mainnet - http://localhost:14265</option>
+	<option value='none'>--- Custom endpoint ---</option>
+	<option value='custom|'>Enter custom endpoint</option>
+</select>
+
+<div id="customEndpointContainer" style="display:none">
+<input type='text' id='customEndpoint' value='https://testnet140.tangle.works:443' size='90'/> <a href="javascript:clearId('customEndpoint');">Clear</a>
+</div>
+<br /><br />
+
+<!-- =========================================================================== -->
+<div id="seedContainer">
+Use seed:<br />
+<select id='seedMethod' onchange='seedMethodSelection()'>
+<option value='randomSeed' selected='selected'>Generate a random seed (default)</option>
+<option value='enterSeed'>Enter a seed (81 characters: A-Z9)</option>
+<option value='secureRandomNumberFast'>Create Secure Random Number seed (fast)</option>
+</select> <div id="createdSeedContainer" style="display:none"><button onclick="createSeed()" id='createSeedBtn'>Create Seed</button>
+&nbsp;&nbsp;&nbsp;&nbsp; <button onclick="storeSeed()" id='storeSeedBtn'>Store Seed</button>
+&nbsp;&nbsp;&nbsp;&nbsp; Seed checksum: <input type='text' id='seedChecksum' value='' size='3' maxlength='3' style='background-color: #ff1919;' readonly='readonly'/>
+<br />
+<input type='text' id='seed' value='' size='90' /> <a href="javascript:removeSeedFromSessionStorage();">Clear and remove seed from sessionStorage</a>
+</div>
+<br /><br />
+</div>
+
+<!-- =========================================================================== -->
+<div id="securityLevelContainer">
+Security Level:<br />
+<select id='securityLevel'>
+<option value='1'>1 - Low</option>
+<option value='2' selected='selected'>2 - Medium (default)</option>
+<option value='3'>3 - High</option>
+</select>
+<br /><br />
+</div>
+
+Channel mode:<br />
+<select id='channelMode' onchange='selectMode()'>
+<option value='public' selected='selected'>Public</option>
+<option value='private'>Private</option>
+<option value='restricted'>Restricted</option>
+</select>
+<br /><br />
+
+Display message logging in console (Chrome browser):<br />
+<select id='logging'>
+<option value='no' selected='selected'>no</option>
+<option value='yes'>yes</option>
+</select>
+
+<div id="keyContainer" style="display:none">
+<br />
+Encryption key (side_key, only ASCII characters allowed): <a href="javascript:clearId('key');">Clear</a><br />
+<input type='text' id='key' value='' size='90' />
+</div>
+<!-- =========================================================================== -->
+<hr />
+
+<!-- =========================================================================== -->
+<div id="publisherContainer">
+
+Publishing time interval (only needed for the demo):<br />
+<select id='timeInterval'>
+<option value='15' selected='selected'>15 sec</option>
+<option value='30'>30 sec</option>
+<option value='45'>45 sec</option>
+<option value='60'>1:00 min</option>
+<option value='75'>1:15 min</option>
+<option value='90'>1:30 min</option>
+<option value='105'>1:45 min</option>
+<option value='120'>2:00 min</option>
+</select>
+<br /><br />
+
+<button onclick="generate('startPublish')">Start publishing data</button> &nbsp;&nbsp;&nbsp; <button onclick="generate('stopPublish')">Stop publishing data</button>
+</div>
+
+<!-- =========================================================================== -->
+<div id="receiverContainer" style="display:none">
+Root: <a href="javascript:clearId('root');">Clear</a><br />
+<input type='text' id='root' value='' size='90' />
+<br /><br />
+
+<button onclick="generate('startReceive')">Start receiving data</button> &nbsp;&nbsp;&nbsp; <button onclick="generate('stopReceive')">Stop receiving data</button>
+</div>
+
+<!-- =========================================================================== -->
+<div id="decoderContainer" style="display:none">
+Root: <a href="javascript:clearId('root2');">Clear</a><br />
+<input type='text' id='root2' value='' size='90' />
+<br /><br />
+
+Encoded payload:
+<a href="javascript:clearId('encodedJSONObject');">Clear</a> <br />
+<textarea rows="20" cols="150" id='encodedJSONObject'></textarea>
+<br /><br />
+<button onclick="generate('startDecode')">Decode</button>
+</div>
+<!-- =========================================================================== -->
+<br /><br />
+Published / Received / Decoded Data:
+<a href="javascript:clearId('output');">Clear</a> <br />
+<textarea rows="20" cols="150" id='output'></textarea><br />
+
+<hr />
+<div id="disclaimer">
+This application is created for educational purpose demonstrating the Masked Authentication Messaging Javascript library (mam.client.js).
+
+<div id="warning">
+USE THIS APPLICATION ONLY FOR EDUCATIONAL PURPOSE. IF YOU USE IT FOR ANY OTHER PURPOSE, IT MAY RESULT IN LOSING ALL YOUR IOTAS.
+</div>
+
+Only https endpoints will work on Mobilefish.com site.<br />
+It is recommended that you download and install this page on your computer including all necessary javascript libraries (see installation instructions).
+<br /><br />
+If you've found this tool useful feel free to send me a tip (IOTA): FAEORRIJUKGRSS9UDNRSTKJDBHFHSFA99IVSCFFO9PIICXLGEHIKRPAWF9PSOWDOJNEUNPSUKZTZBAYY9QILAJUBDY
+<br /><br />
+Disclaimer: <br />
+Use this tool at your own risk! All information on this page is provided "as is", without any warranty.
+Mobilefish.com will not be liable for any damages, loss of profits or any other kind of loss you may sustain by using this tool.
+</div>
+<br />
+<!-- ======================================================================= -->
+<script type="text/javascript">
+"use strict";
+
+let intervalInstance;
+let startExecuteDataRetrieval;
+
+function clearId(id) {
+	document.getElementById(id).value = "";
+}
+
+function clearOutput() {
+	document.getElementById('output').innerHTML = "";
+}
+
+function setEndpoint() {
+	const endpoint = document.getElementById('endpoint').value;
+
+	if(endpoint == "none") {
+		alert('Please select an endpoint');
+		throw new Error('Abort javascript: Please select an endpoint');
+	}
+
+	const parts = endpoint.split("|");
+	const network = parts[0].trim();
+
+	if(network == "testnet"){
+		document.getElementById('customEndpointContainer').style.display = 'none';
+	} else if(network == "mainnet"){
+		document.getElementById('customEndpointContainer').style.display = 'none';
+	} else if(network == "custom"){
+		document.getElementById('customEndpointContainer').style.display = 'inline';
+	}
+}
+
+function makeSelection(){
+	let makeSelection = document.getElementById('makeSelection').value;
+	// Enable channelMode
+	document.getElementById("channelMode").disabled=false;
+
+	if(makeSelection == "publisher") {
+		document.getElementById('publisherContainer').style.display = "block";
+		document.getElementById('receiverContainer').style.display = "none";
+		document.getElementById('decoderContainer').style.display = "none";
+
+		document.getElementById('seedContainer').style.display = "block";
+		document.getElementById('securityLevelContainer').style.display = "block";
+
+	} else if(makeSelection == "receiver") {
+		document.getElementById('publisherContainer').style.display = "none";
+		document.getElementById('receiverContainer').style.display = "block";
+		document.getElementById('decoderContainer').style.display = "none";
+
+		document.getElementById('seedContainer').style.display = "none";
+		document.getElementById('securityLevelContainer').style.display = "none";
+
+	} else if(makeSelection == "decode") {
+		document.getElementById('publisherContainer').style.display = "none";
+		document.getElementById('receiverContainer').style.display = "none";
+		document.getElementById('decoderContainer').style.display = "block";
+
+		document.getElementById('seedContainer').style.display = "none";
+		document.getElementById('securityLevelContainer').style.display = "none";
+	}
+}
+
+function selectMode(){
+	const channelMode = document.getElementById('channelMode').value;
+
+	if(channelMode == "restricted") {
+		document.getElementById('keyContainer').style.display = "block";
+	} else {
+		document.getElementById('keyContainer').style.display = "none";
+	}
+}
+
+function seedMethodSelection(){
+	const seedMethod = document.getElementById('seedMethod').value;
+	removeSeedFromSessionStorage();
+
+	if(seedMethod == "randomSeed") {
+		document.getElementById('createdSeedContainer').style.display = 'none';
+	} else {
+		document.getElementById('createdSeedContainer').style.display = 'inline';
+
+		if(seedMethod == "enterSeed") {
+			document.getElementById('createSeedBtn').style.display = 'none';
+			document.getElementById('storeSeedBtn').style.display = 'inline';
+		} else if(seedMethod == "secureRandomNumberFast") {
+			document.getElementById('createSeedBtn').style.display = 'inline';
+			document.getElementById('storeSeedBtn').style.display = 'inline';
+		}
+	}
+}
+
+function removeSeedFromSessionStorage(){
+	// When browser or tab is closed the seed is deleted from sessionStorage.
+	sessionStorage.removeItem('seed');
+
+	document.getElementById('seed').value = "";
+	document.getElementById('seedChecksum').value = "";
+	document.getElementById('seedChecksum').style.backgroundColor = "#ff1919";
+}
+
+function checkSeedStorage(){
+	let iota = getIOTA();
+
+	if (sessionStorage.getItem('seed') == null) {
+		alert('No seed stored in sessionStorage');
+		throw new Error('No seed stored in sessionStorage');
+	} else if (!iota.valid.isHash(sessionStorage.getItem('seed'))) {
+		alert('Invalid seed in sessionStorage');
+		throw new Error('Abort javascript: No seed stored in sessionStorage');
+	}
+}
+
+function storeSeed(){
+	let iota = getIOTA();
+
+	let seed = document.getElementById('seed').value;
+
+	// Validate seed
+	seed = seed.trim();
+
+	if (!iota.valid.isHash(seed)) {
+		alert('The seed is not valid');
+		throw new Error('Abort javascript: The seed is not valid');
+	}
+
+	// Calculate 3 character seed checksum
+	const seedChecksum = iota.utils.addChecksum(seed, 3, false).substr(-3);
+
+	// Store seed to sessionStorage
+	sessionStorage.setItem('seed', seed);
+
+	// Clear seed variable for security reasons
+	seed = '';
+
+	document.getElementById('seed').value = "Seed stored in browser sessionStorage.";
+	document.getElementById('seedChecksum').value = seedChecksum;
+	document.getElementById('seedChecksum').style.backgroundColor = "#00e600";
+}
+
+function createSeed(){
+	const seedMethod = document.getElementById('seedMethod').value;
+	let seed = '';
+
+	if(seedMethod == "secureRandomNumberFast") {
+		const length = 81;
+		const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ9';
+		let randomValues = new Uint32Array(length);
+		let result = new Array(length);
+
+		window.crypto.getRandomValues(randomValues);
+
+		for (let i = 0; i < randomValues.length; i++) {
+			result[i] = chars[randomValues[i] % chars.length];
+		}
+
+		seed = result.join('');
+		randomValues = '';
+		result = '';
+
+	}
+
+	document.getElementById('seed').value = seed;
+}
+
+
+function getIOTA(){
+	const endpoint = document.getElementById('endpoint').value;
+
+	if(endpoint == "none") {
+		alert('Please select an endpoint');
+		throw new Error('Abort javascript: Please select an endpoint');
+	}
+
+	let uri = '';
+
+	const parts = endpoint.split("|");
+	const network = parts[0].trim();
+
+	if(network == "testnet" || network == "mainnet"){
+		uri = parts[1].trim();
+	} else if(network == "custom"){
+		uri = document.getElementById('customEndpoint').value;
+		uri = uri.trim();
+
+		if(uri == ""){
+			alert('Enter a custom endpoint');
+			throw new Error('Abort javascript: Enter a custom endpoint');
+		}
+	}
+
+	const lastColonIndex = uri.lastIndexOf(":");
+	const host = uri.substring(0, lastColonIndex);
+	const port = uri.substring(lastColonIndex+1);
+
+	let iota = new IOTA({
+		'host': host,
+		'port': port
+	});
+
+	return iota;
+}
+
+function getDateAndTime(){
+	let a = new Date();
+	let year = a.getUTCFullYear();
+	let month = (a.getUTCMonth()+1) < 10 ? '0' + (a.getUTCMonth()+1) : (a.getUTCMonth()+1);
+	let date = a.getUTCDate() < 10 ? '0' + a.getUTCDate() : a.getUTCDate();
+	let hour = a.getUTCHours() < 10 ? '0' + a.getUTCHours() : a.getUTCHours();
+	let min = a.getUTCMinutes() < 10 ? '0' + a.getUTCMinutes() : a.getUTCMinutes();
+	let sec = a.getUTCSeconds() < 10 ? '0' + a.getUTCSeconds() : a.getUTCSeconds();
+	let time = date + '/' + month + '/' + year + ' ' + hour + ':' + min + ':' + sec ;
+	return time;
+}
+
+function generate(btnSelection) {
+	let iota = getIOTA();
+
+	const securityLevel = document.getElementById('securityLevel').value;
+	const seedMethod = document.getElementById('seedMethod').value;
+	const channelMode = document.getElementById('channelMode').value;
+	const encodedJSONObject = document.getElementById('encodedJSONObject').value;
+
+	let key = null;
+	let keyString = document.getElementById('key').value;
+	keyString = keyString.trim();
+
+	// Check channel mode
+	if(channelMode == 'restricted' && keyString == ""){
+		alert('A key is required for a Restricted channel');
+		throw new Error('Abort javascript: Enter a valid key');
+	}
+
+	if(channelMode == 'restricted' && keyString != "" && iota.utils.toTrytes(keyString) == null){
+		alert('The encryption key contains invalid ASCII character(s)');
+		throw new Error('Abort javascript: Enter a valid key');
+	}
+
+	// Initialise MAM State
+	let Mam = window.Mam;
+	let mamState;
+	if (btnSelection == 'startPublish') {
+		if(seedMethod == "randomSeed") {
+			mamState = Mam.init(iota, undefined, securityLevel);
+		} else {
+			checkSeedStorage();
+			mamState = Mam.init(iota,sessionStorage.getItem('seed'),securityLevel);
+		}
+	} else if(btnSelection == 'startReceive' || btnSelection == 'startDecode') {
+		// The receiver does not need to specify the seed and security level
+		mamState = Mam.init(iota);
+	}
+
+	if (btnSelection == 'startPublish' || btnSelection == 'startReceive' || btnSelection == 'startDecode') {
+		// Set channel mode
+		if(channelMode == 'private') {
+			mamState = Mam.changeMode(mamState, 'private');
+		} else if(channelMode == 'restricted') {
+			// You MUST convert the keyString to trytes.
+			key = iota.utils.toTrytes(keyString);
+			mamState = Mam.changeMode(mamState, 'restricted', key);
+		}
+	}
+
+	if(btnSelection == 'startPublish') {
+		document.getElementById('output').value = "Please wait, start publishing data to the Tangle...\n";
+		let timeInterval = document.getElementById('timeInterval').value;
+
+		// Publish to Tangle
+		const publish = async function(packet) {
+			// Create MAM Payload
+			let trytes = iota.utils.toTrytes(JSON.stringify(packet));
+			let message = Mam.create(mamState, trytes);
+
+			if(document.getElementById('logging').value == "yes"){
+				console.log(JSON.stringify(message,null,"\t"));
+			}
+
+			// Save new mamState
+			mamState = message.state;
+
+			// Attach the payload
+			await Mam.attach(message.payload, message.address);
+			return message.root;
+		}
+
+		const generateDummyJSON = function(){
+			let randomNumber = Math.floor((Math.random()*89)+10);
+			let dateTime = getDateAndTime();
+			let json = {"data": randomNumber, "dateTime":dateTime};
+			return json;
+		}
+
+		const executeDataPublishing = async function() {
+			let json = generateDummyJSON();
+			let root = await publish(json);
+
+			let display = "dateTime: "+json.dateTime+", "+"data: "+json.data+", "+"root: "+root+"\n";
+			document.getElementById('output').value += display;
+		}
+
+		// Time interval set to every 15 seconds
+		intervalInstance = setInterval(executeDataPublishing, parseInt(timeInterval)*1000);
+
+	} else if(btnSelection == 'startReceive') {
+		let root = document.getElementById('root').value;
+
+		if(!iota.valid.isAddress(root)){
+			alert('Invalid root');
+			throw new Error('Abort javascript: Enter a valid root');
+		}
+
+		document.getElementById('output').value = "Please wait, start extracting data from the Tangle...\n";
+		startExecuteDataRetrieval = true;
+
+		const executeDataRetrieval = async function(rootVal, keyVal) {
+			let resp = await Mam.fetch(rootVal, channelMode, keyVal, function(data) {
+				let json = JSON.parse(iota.utils.fromTrytes(data));
+
+				if(document.getElementById('logging').value == "yes"){
+					console.log(JSON.stringify(json,null,"\t"));
+				}
+
+				let display = "dateTime: "+json.dateTime+", "+"data: "+json.data+"\n";
+				document.getElementById('output').value += display;
+			});
+
+			// The resp looks like:
+			// {
+			// "nextRoot": "MIXGFXOGWRSJIEPOOXCOXIZGUKASMSTQTSGOSHNICLZHAHJPEHDCPIBHADLRLZWYBWFHDB9AHXPOXLBEY"
+			// }
+
+			if(startExecuteDataRetrieval){
+				executeDataRetrieval(resp.nextRoot, keyVal);
+			}
+		}
+
+		executeDataRetrieval(root, key);
+
+	} else if(btnSelection == 'stopPublish') {
+		document.getElementById('output').value += "Stop publishing data to the Tangle.\n";
+		clearInterval(intervalInstance);
+	} else if(btnSelection == 'stopReceive') {
+		document.getElementById('output').value += "Stop extracting data from the Tangle.\n";
+		startExecuteDataRetrieval = false;
+	} else if(btnSelection == 'startDecode') {
+		let root = document.getElementById('root2').value;
+
+		if(!iota.valid.isAddress(root)){
+			alert('Invalid root');
+			throw new Error('Abort javascript: Enter a valid root');
+		}
+
+		// The decodedJSONObject looks like:
+		// {
+		//  "payload": "ODGASCPCHDPCGADBYAUAQAGASCPCHDTCCCXCADTCGADBGAWAXATAUAWATAWAUAVABBEAVAUADBZAYADBXAYAGAQD",
+		//  "next_root": "SJLONMWLYHTGAEEL9ORJYWFCIMAKHAEJBKFAAIDBQNFRMNYLXDYMZTZIYKJGPWNWHPEW9GXDCPFPHRC9T"
+		// }
+		//
+
+		let decodedJSONObject = Mam.decode(encodedJSONObject, key, root);
+		let decodedPayload = iota.utils.fromTrytes(decodedJSONObject.payload);
+
+		let output = "Decoded JSONObject:\n";
+		output += JSON.stringify(decodedJSONObject,null,"\t");
+		output += "\n\n";
+		output += "Decoded payload:\n";
+		output += decodedPayload;
+		document.getElementById('output').value = output;
+	}
+}
+</script>
+
+</body>
+</html>
