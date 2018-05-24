@@ -8,29 +8,24 @@ Installation instructions:
 	The iota.min.js (v0.4.7) javascript library file can be downloaded from:
 	https://github.com/iotaledger/iota.lib.js/releases
 	The library file is located in iota.lib.js-X.X.X/dist/iota.min.js
-2.	Get the mam.web.js and iota-bindings-emscripten.wasm files.
-	The mam.web.js and iota-bindings-emscripten.wasm (last commit: feb 5, 2018; commit hash: a365e8f ) can be downloaded from:
+2.	Get the mam.web.js file.
+	The mam.web.js (last commit: Apr 19, 2018; commit hash: 4f56f8f ) can be downloaded from:
 	https://github.com/iotaledger/mam.client.js
-	Both files are located in the lib folder.
-3. Copy the mam.html, iota.min.js, mam.web.js and iota-bindings-emscripten.wasm files to a webserver.
+	The file is located in the lib folder.
+3. Copy the mam.html, iota.min.js and mam.web.js files to a webserver.
 4. Let assume your webserver folder structure looks like this:
 	<docroot>/mam.html
 	<docroot>/scripts/iota/v0.4.7/iota.min.js
 	<docroot>/scripts/iota/mam.web.js
-	<docroot>/scripts/iota/iota-bindings-emscripten.wasm
 
  	Modify file mam.html and edit the javascript locations.
- 	Modify file mam.web.js. The location of the file iota-bindings-emscripten.wasm must be changed.
-	Must specify the absolute path starting from the webserver docroot.
-	A relative path is not allowed!
-	Based on the previous mentioned folder structure change line to: /scripts/iota/iota-bindings-emscripten.wasm
--->
+ -->
 <html>
 <head>
 <title>Mobilefish.com - IOTA Masked Authenticated Messaging Demo</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<script type="text/javascript" src="/scripts/iota/v0.4.7/iota.min.js"></script>
-<script type="text/javascript" src="/scripts/iota/mam.web.js"></script>
+<script type="text/javascript" src="../../scripts/iota/v0.4.7/iota.min.js"></script>
+<script type="text/javascript" src="../../scripts/iota/mam.web.js"></script>
 <script type="text/javascript">
 "use strict";
 
@@ -78,7 +73,7 @@ select {width: 40%; border: 1px solid black; border-radius: 4px; background-colo
 
 </head>
 <body>
-<h1> <script language="JavaScript" type="text/javascript">showIOTAImage();</script> IOTA Masked Authenticated Messaging Demo (v1.0.3) <script language="JavaScript" type="text/javascript">showIOTAImage();</script> </h1>
+<h1> <script language="JavaScript" type="text/javascript">showIOTAImage();</script> IOTA Masked Authenticated Messaging Demo (v1.1.0) <script language="JavaScript" type="text/javascript">showIOTAImage();</script> </h1>
 
 <!-- =========================================================================== -->
 Select option:<br />
@@ -482,8 +477,9 @@ function generate(btnSelection) {
 	}
 
 	// Initialise MAM State
-	let Mam = window.Mam;
+	let Mam = require('mam.web.js');
 	let mamState;
+
 	if (btnSelection == 'startPublish') {
 		if(seedMethod == "randomSeed") {
 			mamState = Mam.init(iota, undefined, securityLevel);
@@ -618,3 +614,4 @@ function generate(btnSelection) {
 
 </body>
 </html>
+
